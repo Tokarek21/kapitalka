@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Kapitałek</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #output {
+            /* To jest kluczowa linia dla efektu kapitałek */
+            font-variant: small-caps;
+            
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 50px;
+            white-space: pre-wrap; /* Zachowuje entery */
+            word-wrap: break-word;
+            font-size: 1.2em;
+        }
+        h2 { color: #333; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Generator Kapitałek</h2>
+    
+    <label for="inputText">Wpisz tekst tutaj:</label>
+    <textarea id="inputText" placeholder="Wpisz coś małymi literami..."></textarea>
+
+    <label>Wynik (Kapitalki):</label>
+    <div id="output">Tutaj pojawi się Twój tekst...</div>
+</div>
+
+<script>
+    const input = document.getElementById('inputText');
+    const output = document.getElementById('output');
+
+    // Funkcja aktualizująca wynik w czasie rzeczywistym
+    input.addEventListener('input', function() {
+        if (this.value.length > 0) {
+            output.textContent = this.value;
+        } else {
+            output.textContent = "Tutaj pojawi się Twój tekst...";
+        }
+    });
+</script>
+
+</body>
+</html>
