@@ -1,80 +1,117 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Hyper-Object</title>
+    <title>NEON OVERDRIVE 3D</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #050505; font-family: sans-serif; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+        #game-container {
+            perspective: 800px;
+            width: 100vw; height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #world {
+            width: 1000px; height: 1000px;
+            transform-style: preserve-3d;
+        }
+        .wall {
+            position: absolute; width: 100%; height: 100%;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff;
+            opacity: 0.5;
+        }
+        #player {
+            position: absolute; width: 50px; height: 50px;
+            background: #f0f; border: 2px solid #fff;
+            box-shadow: 0 0 30px #f0f;
+            transform: translateZ(600px);
+            z-index: 10;
+        }
+        .obstacle {
+            position: absolute; width: 100px; height: 100px;
+            background: #fff; box-shadow: 0 0 20px #fff;
+        }
         #ui {
             position: absolute; top: 20px; left: 20px; color: #0ff;
-            pointer-events: none; text-transform: uppercase; letter-spacing: 2px;
+            font-size: 24px; text-shadow: 0 0 10px #0ff;
         }
     </style>
 </head>
 <body>
-    <div id="ui">System: Aktywny | Status: Renderowanie 3D</div>
-    
-    <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
-    </script>
+    <div id="ui">DISTANCE: <span id="score">0</span>m</div>
+    <div id="game-container">
+        <div id="player"></div>
+        <div id="world"></div>
+    </div>
 
-    <script type="module">
-        import * as THREE from 'three';
+    <script>
+        const world = document.getElementById('world');
+        const player = document.getElementById('player');
+        const scoreElement = document.getElementById('score');
+        
+        let pX = 0, pY = 0;
+        let score = 0;
+        let speed = 20;
+        let obstacles = [];
 
-        // Scena i kamera
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // Geometria - Skomplikowany węzeł torusowy
-        const geometry = new THREE.TorusKnotGeometry(10, 3, 200, 32);
-        const material = new THREE.MeshBasicMaterial({ 
-            color: 0x00ffff, 
-            wireframe: true,
-            transparent: true,
-            opacity: 0.8
-        });
-        const knot = new THREE.Mesh(geometry, material);
-        scene.add(knot);
-
-        camera.position.z = 30;
-
-        // Interakcja myszą
-        let mouseX = 0, mouseY = 0;
+        // Sterowanie myszą
         document.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX - window.innerWidth / 2) / 100;
-            mousey = (e.clientY - window.innerHeight / 2) / 100;
+            pX = (e.clientX - window.innerWidth / 2) * 0.5;
+            pY = (e.clientY - window.innerHeight / 2) * 0.5;
+            player.style.transform = `translate3d(${pX}px, ${pY}px, 600px) rotateX(${-pY/10}deg) rotateY(${pX/10}deg)`;
         });
 
-        // Pętla animacji (Serce efektu "WOW")
-        function animate() {
-            requestAnimationFrame(animate);
-
-            knot.rotation.x += 0.01;
-            knot.rotation.y += 0.01;
-
-            // Reakcja na mysz
-            knot.rotation.x += mouseX * 0.05;
-            knot.rotation.z += mouseY * 0.05;
-
-            // Efekt "oddychania" - zmiana skali
-            const time = Date.now() * 0.001;
-            const s = 1 + Math.sin(time) * 0.2;
-            knot.scale.set(s, s, s);
-
-            renderer.render(scene, camera);
+        function createObstacle() {
+            const obs = document.createElement('div');
+            obs.className = 'obstacle';
+            let z = -2000;
+            let x = (Math.random() - 0.5) * 1000;
+            let y = (Math.random() - 0.5) * 1000;
+            
+            obs.style.transform = `translate3d(${x}px, ${y}px, ${z}px)`;
+            world.appendChild(obs);
+            return { element: obs, x, y, z };
         }
 
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        function update() {
+            score += 1;
+            scoreElement.innerText = score;
 
-        animate();
+            // Dodawaj przeszkody
+            if (Math.random() > 0.9) {
+                obstacles.push(createObstacle());
+            }
+
+            // Animuj przeszkody
+            obstacles.forEach((obs, index) => {
+                obs.z += speed;
+                obs.element.style.transform = `translate3d(${obs.x}px, ${obs.y}px, ${obs.z}px)`;
+
+                // Kolizja (bardzo uproszczona)
+                if (obs.z > 550 && obs.z < 650) {
+                    const dx = Math.abs(obs.x - pX);
+                    const dy = Math.abs(obs.y - pY);
+                    if (dx < 70 && dy < 70) {
+                        alert("GAME OVER! Wynik: " + score);
+                        score = 0;
+                        obstacles.forEach(o => o.element.remove());
+                        obstacles = [];
+                    }
+                }
+
+                // Usuń te, które minęliśmy
+                if (obs.z > 1000) {
+                    obs.element.remove();
+                    obstacles.splice(index, 1);
+                }
+            });
+
+            // Przyspieszaj
+            speed += 0.005;
+
+            requestAnimationFrame(update);
+        }
+
+        update();
     </script>
 </body>
 </html>
