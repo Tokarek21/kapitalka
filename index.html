@@ -3,73 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Kapitałek</title>
+    <title>MC Admin Helper - Niezbędnik Serwerowy</title>
     <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 50px;
-            background-color: #f4f4f9;
+        :root {
+            --primary: #2ecc71;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
         }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 600px;
-        }
-        textarea {
-            width: 100%;
-            height: 100px;
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        #output {
-            /* To jest kluczowa linia dla efektu kapitałek */
-            font-variant: small-caps;
-            
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 4px;
-            min-height: 50px;
-            white-space: pre-wrap; /* Zachowuje entery */
-            word-wrap: break-word;
-            font-size: 1.2em;
-        }
-        h2 { color: #333; }
-        label { font-weight: bold; display: block; margin-bottom: 5px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light); margin: 0; padding: 20px; color: var(--dark); }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0; }
+        
+        textarea, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 10px; }
+        
+        .output-box { background: #333; color: #fff; padding: 15px; border-radius: 6px; position: relative; min-height: 40px; word-wrap: break-word; }
+        .small-caps { font-variant: small-caps; font-size: 1.3em; }
+        
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #27ae60; }
+        .copy-btn { position: absolute; right: 10px; top: 10px; background: #555; font-size: 12px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Generator Kapitałek</h2>
-    
-    <label for="inputText">Wpisz tekst tutaj:</label>
-    <textarea id="inputText" placeholder="Wpisz coś małymi literami..."></textarea>
+    <header>
+        <h1>🛠️ MC Serwer Helper</h1>
+        <p>Wszystko, czego potrzebuje admin w jednym miejscu.</p>
+    </header>
 
-    <label>Wynik (Kapitalki):</label>
-    <div id="output">Tutaj pojawi się Twój tekst...</div>
+    <div class="card">
+        <h2>✨ Generator Kapitałek</h2>
+        <p>Zamień zwykły tekst na eleganckie małe wielkie litery.</p>
+        <textarea id="capInput" placeholder="Wpisz tekst..." oninput="generateCaps()"></textarea>
+        <div class="output-box">
+            <span id="capOutput" class="small-caps">Tutaj pojawi się wynik...</span>
+            <button class="copy-btn" onclick="copyText('capOutput')">KOPIUJ</button>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>📦 Kalkulator Stacków</h2>
+            <p>Ile to stacków?</p>
+            <input type="number" id="itemCount" placeholder="Ilość przedmiotów..." oninput="calcStacks()">
+            <div id="stackResult" style="font-weight: bold; color: var(--primary); font-size: 1.1em;">
+                Wynik: 0 stacków i 0 sztuk
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎨 Szybkie Kolory (&)</h2>
+            <p>Podgląd kolorów Minecraft.</p>
+            <input type="text" id="colorInput" placeholder="Np. &6Witaj &cGraczu" oninput="previewColors()">
+            <div id="colorPreview" class="output-box" style="background: #1a1a1a;">
+                Podgląd koloru...
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    const input = document.getElementById('inputText');
-    const output = document.getElementById('output');
+    // Funkcja do Kapitałek
+    function generateCaps() {
+        const input = document.getElementById('capInput').value;
+        const output = document.getElementById('capOutput');
+        output.textContent = input || "Tutaj pojawi się wynik...";
+    }
 
-    // Funkcja aktualizująca wynik w czasie rzeczywistym
-    input.addEventListener('input', function() {
-        if (this.value.length > 0) {
-            output.textContent = this.value;
-        } else {
-            output.textContent = "Tutaj pojawi się Twój tekst...";
+    // Funkcja do Stacków
+    function calcStacks() {
+        const count = document.getElementById('itemCount').value;
+        const stacks = Math.floor(count / 64);
+        const remainder = count % 64;
+        document.getElementById('stackResult').innerHTML = `Wynik: <b>${stacks}</b> stacków i <b>${remainder}</b> sztuk`;
+    }
+
+    // Funkcja do Podglądu Kolorów
+    function previewColors() {
+        const input = document.getElementById('colorInput').value;
+        const preview = document.getElementById('colorPreview');
+        
+        // Prosta zamiana kodów & na HTML
+        const colors = {
+            '&0': '#000000', '&1': '#0000AA', '&2': '#00AA00', '&3': '#00AAAA',
+            '&4': '#AA0000', '&5': '#AA00AA', '&6': '#FFAA00', '&7': '#AAAAAA',
+            '&8': '#555555', '&9': '#5555FF', '&a': '#55FF55', '&b': '#55FFFF',
+            '&c': '#FF5555', '&d': '#FF55FF', '&e': '#FFFF55', '&f': '#FFFFFF'
+        };
+
+        let formatted = input;
+        for (const [code, hex] of Object.entries(colors)) {
+            const regex = new RegExp(code, 'g');
+            formatted = formatted.replace(regex, `<span style="color:${hex}">`);
         }
-    });
+        // Zamykanie spanów (uproszczone)
+        preview.innerHTML = formatted || "Podgląd koloru...";
+    }
+
+    // Funkcja kopiowania
+    function copyText(elementId) {
+        const text = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(text);
+        alert("Skopiowano do schowka!");
+    }
 </script>
 
 </body>
